@@ -15,13 +15,15 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
-    private final JwtAuthConverter jwtAuthConverter;
+
+    private final JwtAuthConverter jwtAuthConverter = new JwtAuthConverter();
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http ) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/eureka/**")
+                        .requestMatchers("/eureka/**" )
                         .permitAll()
                         .anyRequest()
                         .authenticated())

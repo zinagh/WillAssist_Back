@@ -19,5 +19,7 @@ public class UserDto {
     private Long cin;
     private Long numTel ;
     private Role role ;
+    private String password;
+
 
 }

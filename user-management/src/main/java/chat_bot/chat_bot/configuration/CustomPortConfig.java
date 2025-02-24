@@ -1,6 +1,5 @@
 package chat_bot.chat_bot.configuration;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
@@ -11,7 +10,6 @@ import java.net.ServerSocket;
 
 
 @Configuration
-@Slf4j
 public class CustomPortConfig implements WebServerFactoryCustomizer<ConfigurableServletWebServerFactory> {
 
     @Value("${MIN_PORT}")
@@ -25,7 +23,6 @@ public class CustomPortConfig implements WebServerFactoryCustomizer<Configurable
     @Override
     public void customize(ConfigurableServletWebServerFactory factory){
         if(initialPort.equals("0")) {
-            log.info("Port is 0, Assign a dynamic port...");
             int availablePort = findAvailablePort();
             factory.setPort(availablePort);
             System.getProperties().put("server.port", availablePort);
@@ -37,7 +34,6 @@ public class CustomPortConfig implements WebServerFactoryCustomizer<Configurable
             try(ServerSocket socket = new ServerSocket(port)){
                 return port;
             } catch(IOException e) {
-                log.info("Port : " + port + "is already in use",e);
             }
         }
         throw new IllegalStateException("No available ports ");
