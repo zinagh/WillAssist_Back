@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtClaimNames;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Map;
@@ -17,88 +18,59 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Component
 public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationToken> {
     private final JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter =
             new JwtGrantedAuthoritiesConverter();
-    @Value("${principle-attribute}")
-    private String principleAttribut;
-    @Value("${resourceId}")
-    private String resourceId;
+
+    @Value("${principle-attribute:preferred_username}")
+    private String principalAttribute; // Fixed typo from "principleAttribut"
+
     @Override
     public AbstractAuthenticationToken convert(@NonNull Jwt jwt) {
         Collection<GrantedAuthority> authorities = Stream.concat(
-                jwtGrantedAuthoritiesConverter.convert(jwt).stream(),
-                extractResourceRoles(jwt).stream()
+                jwtGrantedAuthoritiesConverter.convert(jwt).stream(), // Scope-based roles (e.g., from "scope" claim)
+                extractRealmRoles(jwt).stream() // Realm roles from "realm_access"
         ).collect(Collectors.toSet());
-        return new JwtAuthenticationToken(
-                jwt,
-                authorities,
-                getPrincipleClaimName(jwt)
-        );
+
+        String principal = getPrincipalClaimName(jwt);
+        System.out.println("Authorities: " + authorities);
+        return new JwtAuthenticationToken(jwt, authorities, principal);
     }
 
-    private String getPrincipleClaimName(Jwt jwt) {
+    private String getPrincipalClaimName(Jwt jwt) {
         System.out.println("JWT Claims: " + jwt.getClaims());
+        String claimName = principalAttribute != null && !principalAttribute.isEmpty()
+                ? principalAttribute
+                : JwtClaimNames.SUB;
 
-        String claimName = JwtClaimNames.SUB; // Default claim
-
-        if (principleAttribut != null) {
-            claimName = principleAttribut;
+        String claimValue = jwt.getClaimAsString(claimName);
+        if (claimValue == null) {
+            System.out.println("WARNING: Claim '" + claimName + "' not found, falling back to 'sub'");
+            claimValue = jwt.getClaimAsString(JwtClaimNames.SUB);
         }
-
-        System.out.println("Looking for claim: " + claimName);
-
-        if (!jwt.hasClaim(claimName)) {
-            System.out.println("ERROR: Claim '" + claimName + "' is missing in JWT.");
-            return null; // Handle missing claim
-        }
-
-        String claimValue = jwt.getClaim(claimName);
-        System.out.println("Retrieved claim value: " + claimValue);
-        return claimValue;
+        System.out.println("Principal claim: " + claimName + " = " + claimValue);
+        return claimValue != null ? claimValue : "unknown";
     }
 
-
-
-
-    private Collection<? extends GrantedAuthority> extractResourceRoles(Jwt jwt) {
-        System.out.println("JWT Claims: " + jwt.getClaims());
-
-        if (resourceId == null || resourceId.isEmpty()) {
-            System.out.println("ERROR: 'resourceId' property is not set!");
+    private Collection<? extends GrantedAuthority> extractRealmRoles(Jwt jwt) {
+        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+        if (realmAccess == null) {
+            System.out.println("WARNING: 'realm_access' not found in JWT.");
             return Set.of();
         }
 
-        Object resourceAccessObj = jwt.getClaim(resourceId);
-
-        if (resourceAccessObj == null) {
-            System.out.println("WARNING: JWT does not contain claim: " + resourceId);
+        Object rolesObj = realmAccess.get("roles");
+        if (rolesObj == null || !(rolesObj instanceof Collection)) {
+            System.out.println("WARNING: 'roles' not found or invalid in 'realm_access': " + rolesObj);
             return Set.of();
         }
 
-        if (!(resourceAccessObj instanceof Map)) {
-            System.out.println("ERROR: Expected '" + resourceId + "' to be a Map, but got: " + resourceAccessObj);
-            return Set.of();
-        }
+        Collection<String> realmRoles = (Collection<String>) rolesObj;
+        System.out.println("Extracted Realm Roles: " + realmRoles);
 
-        Map<String, Object> resourceAccess = (Map<String, Object>) resourceAccessObj;
-        Object rolesObj = resourceAccess.get("roles");
-
-        if (rolesObj == null) {
-            System.out.println("WARNING: 'roles' missing inside '" + resourceId + "'");
-            return Set.of();
-        }
-
-        if (!(rolesObj instanceof Collection)) {
-            System.out.println("ERROR: Expected 'roles' to be a Collection, but got: " + rolesObj);
-            return Set.of();
-        }
-
-        Collection<String> resourceRoles = (Collection<String>) rolesObj;
-        System.out.println("Extracted Roles: " + resourceRoles);
-
-        return resourceRoles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+        return realmRoles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
                 .collect(Collectors.toSet());
     }
 }
