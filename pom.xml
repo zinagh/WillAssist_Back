@@ -16,6 +16,8 @@
 		<module>user-management</module>
 		<module>discovery-server</module>
 		<module>api-gateway</module>
+		<module>Faq</module>
+
 
 	</modules>
 

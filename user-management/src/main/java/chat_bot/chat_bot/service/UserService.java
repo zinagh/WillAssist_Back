@@ -6,7 +6,6 @@ import chat_bot.chat_bot.mapper.Imapper;
 import chat_bot.chat_bot.mapper.UserMapper;
 import chat_bot.chat_bot.models.User;
 import chat_bot.chat_bot.repositories.UserRepo;
-import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.CredentialRepresentation;
@@ -20,10 +19,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
+import javax.ws.rs.core.Response;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -49,9 +46,10 @@ public class UserService  implements IuserService {
     private SecurityContextHolder securityContextHolder;
     @Override
     public UserDto retrieveUser(String userName) {
-        User user=  userRepository.findById(userName).get();
-        UserDto userdto = usermapper.userTouserdto(user);
-        return userdto;
+        User user = userRepository.findById(userName)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userName));
+
+        return usermapper.userTouserdto(user);
     }
 
 
@@ -74,10 +72,12 @@ public class UserService  implements IuserService {
                             .getUsername()).get(0).getId();
             imapper.assignerole(userdto.getRole().toString() ,userId);
             User user= usermapper.userdtoTouser(userdto) ;
+            System.out.println("Saving user to MySQL: " + user);
             userRepository.save(user);
+            System.out.println("User saved successfully!");
         }
-    }
 
+    }
     @Override
     public User modifyUser(UserDto userdto) {
         Keycloak keycloak = keycloakSecurity.getKeycloakInstance();
