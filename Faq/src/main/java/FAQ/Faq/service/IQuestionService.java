@@ -11,10 +11,18 @@ public interface IQuestionService {
     Question addQuestion(QuestionDto questionDto );
     List<QuestionDto> retrieveAllQs();
     Reponse addReponse(Long questionId, ReponseDto reponseDto);
+     QuestionDto retrieveQuestion(Long questionId);
+     ReponseDto retrieveReponse(Long reponseId) ;
+     void deleteQuestionAndReponse(Long questionId) ;
+    QuestionDto updateQuestion(Long questionId, QuestionDto updatedQuestionDto);
+    ReponseDto updateResponse(Long reponseId, ReponseDto updatedResponseDto);
+     List<QuestionDto> searchQuestionsByKeyword(String keyword) ;
+     List<QuestionDto> searchQuestionsByCreatedBy(String createdBy) ;
+
    /*
     public Question modifyQst(QuestionDto questionDto);
     void removeQ(Long idQ);
-        Question retrieveQ(Long idQ) ;
+    Question retrieveQ(Long idQ) ;
 
 */
 }

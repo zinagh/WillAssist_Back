@@ -19,7 +19,6 @@ public class Reponse {
     private String createdby;
     @Temporal(TemporalType.TIMESTAMP)
     private Date creationDate;
-    private Date updateDate;
     @JsonIgnore
     @OneToOne
     private Question question;
