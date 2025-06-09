@@ -19,5 +19,8 @@ public class Question {
     private Date creationDate;
     @OneToOne(mappedBy = "question", cascade = CascadeType.ALL)
     private Reponse reponse;
+    @ManyToOne
+    @JoinColumn(name = "categorie_id")
+    private Categorie categorie;
 
 }

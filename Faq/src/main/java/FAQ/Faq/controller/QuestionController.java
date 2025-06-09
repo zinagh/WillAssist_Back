@@ -1,7 +1,9 @@
 package FAQ.Faq.controller;
 
+import FAQ.Faq.dto.CategorieDto;
 import FAQ.Faq.dto.QuestionDto;
 import FAQ.Faq.dto.ReponseDto;
+import FAQ.Faq.models.Categorie;
 import FAQ.Faq.models.Question;
 import FAQ.Faq.models.Reponse;
 import FAQ.Faq.service.IQuestionService;
@@ -9,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -47,7 +50,7 @@ public class QuestionController {
     }
     @DeleteMapping("/deleteQuestion/{id}")
     public void deleteQuestion(@PathVariable Long id) {
-            questionService.deleteQuestionAndReponse(id);
+        questionService.deleteQuestionAndReponse(id);
     }
 
 
@@ -67,6 +70,56 @@ public class QuestionController {
     @GetMapping("/searchByCreatedBy")
     public List<QuestionDto> searchQuestionsByCreatedBy(@RequestParam("createdBy") String createdBy) {
         return questionService.searchQuestionsByCreatedBy(createdBy);
+    }
+
+    @GetMapping("/searchByCreationDate")
+    public List<QuestionDto> searchQuestionsByCreationDate(@RequestParam String creationDate) throws Exception {
+        return questionService.getQuestionsByCreationDate(creationDate);
+    }
+
+    @PostMapping("/add")
+    public Categorie addCategorie(@RequestBody CategorieDto categorieDto) {
+        return questionService.addCat(categorieDto);
+    }
+
+    @GetMapping("/all")
+    public List<Categorie> getAllCategories() {
+        return questionService.getAllCategories();
+    }
+
+    @GetMapping("/getByIdCat/{id}")
+    public Categorie getCategorieById(@PathVariable Long id) {
+        return questionService.getCategorieById(id);
+    }
+
+    @PutMapping("/update/{id}")
+    public Categorie updateCategorie(@PathVariable Long id, @RequestBody CategorieDto categorieDto) {
+        return questionService.updateCat(id, categorieDto);
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public void deleteCategorie(@PathVariable Long id) {
+        questionService.deleteCat(id);
+    }
+
+    @GetMapping("/searchCategorieByName")
+    public List<CategorieDto> searchCategorieByName(@RequestParam String keyword) {
+        return questionService.searchCategorieByName(keyword);
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<String> uploadExcelFile(@RequestParam("file") MultipartFile file) {
+        try {
+            questionService.importExcelFile(file);
+            return ResponseEntity.ok("File uploaded successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to upload file: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/questions")
+    public void deleteQuestions(@RequestBody List<Long> questionIds) {
+        questionService.deleteQuestionsAndResponses(questionIds);
     }
 
 }

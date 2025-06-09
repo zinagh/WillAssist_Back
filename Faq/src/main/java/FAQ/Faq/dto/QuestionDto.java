@@ -1,7 +1,7 @@
 package FAQ.Faq.dto;
 
+import FAQ.Faq.models.Categorie;
 import FAQ.Faq.models.Reponse;
-import jakarta.persistence.OneToOne;
 import lombok.*;
 
 import java.util.Date;
@@ -16,8 +16,8 @@ public class QuestionDto {
     private String questionText;
     private String createdby;
     private Date creationDate;
-    private UserDto userdto;
-    private Reponse reponse;
+    private ReponseDto reponse;
+    private CategorieDto categorie;
 
 
 }

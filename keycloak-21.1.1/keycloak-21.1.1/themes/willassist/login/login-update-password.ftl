@@ -8,7 +8,6 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Update Account password</title>
     <link rel="icon" type="image/png" href="${url.resourcesPath}/teamwill.png">
-    <!-- Add your stylesheet links here if needed -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -64,119 +63,116 @@
             background-color: #95aa4c;
         }
 
-
         .checkbox {
             margin-top: 15px;
         }
 
-        .form-options {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .form-buttons {
-            margin-top: 20px;
-        }
-
-        .button {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-
-        .primary-button {
-            background-color: #95aa4c;
-            color: #fff;
-        }
-
-        .cancel-button {
-            background-color: #ccc;
-            color: #333;
-        }
         .change-password-phrase {
-            margin-bottom: 20px; /* Adjust the spacing as needed */
+            margin-bottom: 20px;
             padding: 15px;
-            background-color: #f8d7da; 
-            border: 1px solid #f5c6cb; /* Border color for emphasis */
-            color: #95aa4c; 
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #95aa4c;
             border-radius: 5px;
         }
 
+        .input-error-custom {
+            color: red;
+            font-size: 0.9rem;
+            margin-top: -5px;
+            margin-bottom: 10px;
+            display: block;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <form id="kc-passwd-update-form" class="form" action="${url.loginAction}" method="post">
-            <input type="text" id="username" name="username" value="${username}" autocomplete="username"
-                readonly="readonly" style="display:none;"/>
-            <input type="password" id="password" name="password" autocomplete="current-password" style="display:none;"/>
+<div class="container">
+    <form id="kc-passwd-update-form" class="form" action="${url.loginAction}" method="post">
+        <input type="text" id="username" name="username" value="${username}" autocomplete="username"
+               readonly="readonly" style="display:none;"/>
+        <input type="password" id="password" name="password" autocomplete="current-password" style="display:none;"/>
 
-        <!-- Add a well-styled phrase here -->
         <div class="change-password-phrase">
             <p>Enhance your account security by updating your password. Ensure your new password includes a combination of letters, numbers, and symbols for added strength.</p>
         </div>
 
+        <div>
+            <label for="password-new">${msg("passwordNew")}</label>
+            <input type="password" id="password-new" name="password-new" autocomplete="new-password"/>
+        </div>
 
-            <div class="${properties.kcFormGroupClass!}">
-                <div class="${properties.kcLabelWrapperClass!}">
-                    <label for="password-new" class="${properties.kcLabelClass!}">${msg("passwordNew")}</label>
-                </div>
-                <div class="${properties.kcInputWrapperClass!}">
-                    <input type="password" id="password-new" name="password-new" class="${properties.kcInputClass!}"
-                        autofocus autocomplete="new-password"
-                        aria-invalid="<#if messagesPerField.existsError('password','password-confirm')>true</#if>"
-                    />
+        <div>
+            <label for="password-confirm">${msg("passwordConfirm")}</label>
+            <input type="password" id="password-confirm" name="password-confirm" autocomplete="new-password"/>
+        </div>
 
-                    <#if messagesPerField.existsError('password')>
-                        <span id="input-error-password" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
-                            ${kcSanitize(messagesPerField.get('password'))?no_esc}
-                        </span>
-                    </#if>
-                </div>
+        <#if isAppInitiatedAction??>
+            <div class="checkbox">
+                <label><input type="checkbox" id="logout-sessions" name="logout-sessions" value="on" checked> ${msg("logoutOtherSessions")}</label>
             </div>
+        </#if>
 
-            <div class="${properties.kcFormGroupClass!}">
-                <div class="${properties.kcLabelWrapperClass!}">
-                    <label for="password-confirm" class="${properties.kcLabelClass!}">${msg("passwordConfirm")}</label>
-                </div>
-                <div class="${properties.kcInputWrapperClass!}">
-                    <input type="password" id="password-confirm" name="password-confirm"
-                        class="${properties.kcInputClass!}"
-                        autocomplete="new-password"
-                        aria-invalid="<#if messagesPerField.existsError('password-confirm')>true</#if>"
-                    />
+        <div style="margin-top: 20px;">
+            <#if isAppInitiatedAction??>
+                <input type="submit" value="${msg("doSubmit")}" />
+                <button type="submit" name="cancel-aia" value="true">${msg("doCancel")}</button>
+            <#else>
+                <input type="submit" value="${msg("doSubmit")}" />
+            </#if>
+        </div>
+    </form>
+</div>
 
-                    <#if messagesPerField.existsError('password-confirm')>
-                        <span id="input-error-password-confirm" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
-                            ${kcSanitize(messagesPerField.get('password-confirm'))?no_esc}
-                        </span>
-                    </#if>
-                </div>
-            </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('kc-passwd-update-form');
+    const passwordInput = document.getElementById('password-new');
+    const confirmPasswordInput = document.getElementById('password-confirm');
 
-            <div class="${properties.kcFormGroupClass!}">
-                <div id="kc-form-options" class="${properties.kcFormOptionsClass!}">
-                    <div class="${properties.kcFormOptionsWrapperClass!}">
-                        <#if isAppInitiatedAction??>
-                            <div class="checkbox">
-                                <label><input type="checkbox" id="logout-sessions" name="logout-sessions" value="on" checked> ${msg("logoutOtherSessions")}</label>
-                            </div>
-                        </#if>
-                    </div>
-                </div>
+    function showError(input, message) {
+        let errorSpan = input.parentNode.querySelector('.input-error-custom');
+        if (!errorSpan) {
+            errorSpan = document.createElement('span');
+            errorSpan.className = 'input-error-custom';
+            input.parentNode.appendChild(errorSpan);
+        }
+        errorSpan.textContent = message;
+    }
 
-                <div id="kc-form-buttons" class="${properties.kcFormButtonsClass!}">
-                    <#if isAppInitiatedAction??>
-                        <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonLargeClass!}" type="submit" value="${msg("doSubmit")}" />
-                        <button class="${properties.kcButtonClass!} ${properties.kcButtonDefaultClass!} ${properties.kcButtonLargeClass!}" type="submit" name="cancel-aia" value="true" />${msg("doCancel")}</button>
-                    <#else>
-                        <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" type="submit" value="${msg("doSubmit")}" />
-                    </#if>
-                </div>
-            </div>
-        </form>
-    </div>
+    function clearErrors() {
+        document.querySelectorAll('.input-error-custom').forEach(e => e.remove());
+    }
+
+    function validatePasswordRules(password) {
+        const hasUpperCase = /[A-Z]/.test(password);
+        const hasNumber = /[0-9]/.test(password);
+        const hasSpecialChar = /[!@#$&*]/.test(password);
+        const hasMinLength = password.length >= 6;
+        return hasUpperCase && hasNumber && hasSpecialChar && hasMinLength;
+    }
+
+    form.addEventListener('submit', function (event) {
+        clearErrors();
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        let isValid = true;
+
+        if (!validatePasswordRules(password)) {
+            showError(passwordInput, "Le mot de passe doit contenir au moins 6 caractères, une majuscule, un chiffre et un symbole.");
+            isValid = false;
+        }
+
+        if (password !== confirmPassword) {
+            showError(confirmPasswordInput, "Les mots de passe ne correspondent pas.");
+            isValid = false;
+        }
+
+        if (!isValid) {
+            event.preventDefault(); // Bloque la soumission du formulaire
+        }
+    });
+});
+</script>
+
 </body>
 </html>

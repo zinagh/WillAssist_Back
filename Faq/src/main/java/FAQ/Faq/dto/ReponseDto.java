@@ -14,7 +14,6 @@ public class ReponseDto {
     private String responseText;
     private String createdby;
     private Date creationDate;
-    private UserDto userdto;
     private Question question;
 
 
