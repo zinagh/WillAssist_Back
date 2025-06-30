@@ -23,7 +23,7 @@ public class SecurityConfiguration {
             serverHttpSecurity
                     .csrf(ServerHttpSecurity.CsrfSpec::disable)
                     .authorizeExchange(exchange ->
-                            exchange.pathMatchers("/eureka/**")
+                            exchange.pathMatchers("/eureka/**", "/messenger/ws/**")
                             .permitAll()
                             .anyExchange()
                             .authenticated())
@@ -36,6 +36,9 @@ public class SecurityConfiguration {
             ServerHttpResponse response = exchange.getResponse();
             HttpHeaders headers = response.getHeaders();
             String path = exchange.getRequest().getURI().getPath();
+            if (!path.startsWith("/messenger/ws/")) {
+                String origin = exchange.getRequest().getHeaders().getOrigin();
+
                 headers.setAccessControlAllowOrigin("*");
                 headers.setAccessControlAllowCredentials(true);
                 headers.setAccessControlAllowHeaders(Arrays.asList("Authorization", "Content-Type"));
@@ -50,8 +53,9 @@ public class SecurityConfiguration {
                     headers.setAccessControlMaxAge(3600L);
                     return new CorsConfiguration().applyPermitDefaultValues();
                 }
-
-            return null;
-        };
+            }
+                return null;
+            }
+            ;
+        }
     }
-}

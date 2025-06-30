@@ -1,4 +1,4 @@
-package FAQ.Faq.configuration;
+package messenger.messenger.configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;

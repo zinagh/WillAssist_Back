@@ -17,6 +17,8 @@
 		<module>discovery-server</module>
 		<module>api-gateway</module>
 		<module>Faq</module>
+		<module>messenger</module>
+
 
 
 	</modules>
